@@ -16,11 +16,11 @@ def main() -> None:
     mode = sys.argv[1] if len(sys.argv) > 1 else "eval"
 
     if mode == "debug":
-        from src.utils import debug_query
+        from src.utils.eval import debug_query
         debug_query("What did Jim sell to buy Della's gift?", top_k=5)
 
     else:
-        from src.utils import run_eval
+        from src.utils.eval import run_eval
         results = run_eval(stream=False)
 
         failed = [r for r in results if not r.passed]

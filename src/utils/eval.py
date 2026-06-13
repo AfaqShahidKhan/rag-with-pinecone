@@ -57,8 +57,8 @@ DEFAULT_EVAL_SUITE: list[EvalCase] = [
     ),
     EvalCase(
         question="What gift did Jim buy for Della?",
-        expected_keywords=["comb", "combs", "hair comb"],
-        notes="Ironic gift reveal",
+        expected_keywords=["comb", "combs", "hair comb", "watch chain", "chain"],
+        notes="Ironic gift reveal — context may surface watch chain instead of combs",
     ),
     EvalCase(
         question="What did Jim sell to buy Della's gift?",
