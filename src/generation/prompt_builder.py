@@ -17,10 +17,16 @@ log = get_logger(__name__)
 # Approximate character budget for context (fits comfortably in Gemma3's context window)
 MAX_CONTEXT_CHARS = 6000
 
-SYSTEM_PROMPT = """You are a precise question-answering assistant.
-Answer the user's question using ONLY the context provided below.
-If the answer is not present in the context, say "I don't have enough information to answer that."
-Do not make up facts. Be concise and direct."""
+SYSTEM_PROMPT = """You are a helpful question-answering assistant.
+
+Answer the user's question using ONLY the information in the context provided below.
+Follow these rules strictly:
+- Write a clear, complete answer in your own words — do NOT copy raw text from the context
+- Use 2-3 sentences unless the answer is a simple fact
+- If the answer requires explaining a reason or motivation, explain it fully
+- Cite which source number(s) support your answer at the end, like: [1] or [1, 3]
+- If the answer is not in the context, say: "I don't have enough information to answer that."
+- Never make up facts not present in the context"""
 
 PROMPT_TEMPLATE = """{system}
 
