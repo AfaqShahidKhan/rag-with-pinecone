@@ -7,8 +7,6 @@ Usage:
 
 from __future__ import annotations
 
-import threading
-import time
 from typing import Generator
 
 import streamlit as st
@@ -33,7 +31,6 @@ def _init_state() -> None:
     defaults = {
         "messages": [],
         "ingestion_status": None,
-        "ingestion_running": False,
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -49,19 +46,6 @@ def _stream_answer(prompt: str, model: str) -> Generator[str, None, None]:
         token = chunk.get("response", "")
         if token:
             yield token
-
-
-# ── Ingestion (runs in background thread) ────────────────────────────────────
-def _run_ingestion() -> None:
-    try:
-        st.session_state.ingestion_status = "running"
-        from src.ingestion.pipeline import run_ingestion_pipeline
-        total = run_ingestion_pipeline()
-        st.session_state.ingestion_status = f"✅ Done — {total} vectors indexed."
-    except Exception as e:
-        st.session_state.ingestion_status = f"❌ Error: {e}"
-    finally:
-        st.session_state.ingestion_running = False
 
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
@@ -99,20 +83,20 @@ with st.sidebar:
     st.subheader("📄 Ingestion")
     st.caption(f"PDF directory: `{settings.data_raw}`")
 
-    if st.button(
-        "▶ Run Ingestion",
-        disabled=st.session_state.ingestion_running,
-        use_container_width=True,
-    ):
-        st.session_state.ingestion_running = True
-        st.session_state.ingestion_status = "running"
-        thread = threading.Thread(target=_run_ingestion, daemon=True)
-        thread.start()
+    if st.button("▶ Run Ingestion", use_container_width=True):
+        with st.spinner("Ingesting PDFs — this may take a minute..."):
+            try:
+                from src.ingestion.pipeline import run_ingestion_pipeline
+                total = run_ingestion_pipeline()
+                st.session_state.ingestion_status = f"✅ Done — {total} vectors indexed."
+            except Exception as e:
+                st.session_state.ingestion_status = f"❌ Error: {e}"
 
-    if st.session_state.ingestion_status == "running":
-        st.info("⏳ Ingesting PDFs — this may take a minute...")
-    elif st.session_state.ingestion_status:
-        st.success(st.session_state.ingestion_status)
+    if st.session_state.ingestion_status:
+        if st.session_state.ingestion_status.startswith("✅"):
+            st.success(st.session_state.ingestion_status)
+        else:
+            st.error(st.session_state.ingestion_status)
 
     st.divider()
 
